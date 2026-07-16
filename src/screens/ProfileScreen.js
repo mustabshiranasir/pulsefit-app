@@ -22,6 +22,8 @@ const ITEM_H = 44;
 // ─── Drum column ──────────────────────────────────────────────────────────────
 const DrumColumn = ({ data, selected, onSelect, label, colWidth = 100 }) => {
   const ref = useRef(null);
+  const { colors: C } = useTheme();
+  const drum = drum_(C);
   return (
     <View style={{ alignItems: "center", width: colWidth }}>
       {label ? <Text style={drum.label}>{label}</Text> : null}
@@ -60,51 +62,66 @@ const DrumColumn = ({ data, selected, onSelect, label, colWidth = 100 }) => {
   );
 };
 
-const drum = StyleSheet.create({
-  label: { fontSize: 10, fontWeight: "600", color: "#9B8E93", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 6 },
+const drum_ = (C) => StyleSheet.create({
+  label: { fontSize: 10, fontWeight: "600", color: C.muted, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 6 },
   wrap: { height: ITEM_H * 5, overflow: "hidden", position: "relative", width: "100%" },
   highlight: {
     position: "absolute", top: ITEM_H * 2, left: 0, right: 0,
     height: ITEM_H, borderRadius: 10,
-    backgroundColor: "#E8607A08",
-    borderTopWidth: 1, borderBottomWidth: 1, borderColor: "#E8607A20",
+    backgroundColor: C.primary + "08",
+    borderTopWidth: 1, borderBottomWidth: 1, borderColor: C.primary + "20",
     zIndex: 1,
   },
   item: { height: ITEM_H, alignItems: "center", justifyContent: "center" },
-  txt: { fontSize: 16, fontWeight: "500", color: "#C0B0B8" },
-  txtActive: { fontSize: 18, fontWeight: "700", color: "#E8607A" },
+  txt: { fontSize: 16, fontWeight: "500", color: C.muted },
+  txtActive: { fontSize: 18, fontWeight: "700", color: C.primary },
 });
 
 // ─── Stepper ──────────────────────────────────────────────────────────────────
-const Stepper = ({ value, onChange, min = 0, max = 300, step = 5, unit = "s" }) => (
-  <View style={step_.row}>
-    <Pressable style={step_.btn} onPress={() => onChange(Math.max(min, value - step))}>
-      <Ionicons name="remove" size={20} color="#E8607A" />
-    </Pressable>
-    <View style={step_.mid}>
-      <Text style={step_.val}>{value}</Text>
-      <Text style={step_.unit}>{unit}</Text>
-    </View>
-    <Pressable style={step_.btn} onPress={() => onChange(Math.min(max, value + step))}>
-      <Ionicons name="add" size={20} color="#E8607A" />
-    </Pressable>
-  </View>
-);
-
-const step_ = StyleSheet.create({
+const step_ = (C) => StyleSheet.create({
   row: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 20 },
   btn: {
     width: 44, height: 44, borderRadius: 14, borderWidth: 1,
-    borderColor: "#E8607A30", backgroundColor: "#FFF8F9",
+    borderColor: C.primary + "30", backgroundColor: C.soft,
     alignItems: "center", justifyContent: "center",
   },
   mid: { alignItems: "center", minWidth: 72 },
-  val: { fontSize: 36, fontWeight: "700", color: "#2D1B20", lineHeight: 42 },
-  unit: { fontSize: 12, fontWeight: "600", color: "#9B8E93", marginTop: -2 },
+  val: { fontSize: 36, fontWeight: "700", color: C.text, lineHeight: 42 },
+  unit: { fontSize: 12, fontWeight: "600", color: C.muted, marginTop: -2 },
 });
 
+const Stepper = ({ value, onChange, min = 0, max = 300, step = 5, unit = "s" }) => {
+  const { colors: C } = useTheme();
+  const s = step_(C);
+  return (
+  <View style={s.row}>
+    <Pressable style={s.btn} onPress={() => onChange(Math.max(min, value - step))}>
+      <Ionicons name="remove" size={20} color={C.primary} />
+    </Pressable>
+    <View style={s.mid}>
+      <Text style={s.val}>{value}</Text>
+      <Text style={s.unit}>{unit}</Text>
+    </View>
+    <Pressable style={s.btn} onPress={() => onChange(Math.min(max, value + step))}>
+      <Ionicons name="add" size={20} color={C.primary} />
+    </Pressable>
+  </View>
+  );
+};
+
 // ─── Segmented ────────────────────────────────────────────────────────────────
-const Seg = ({ options, selected, onSelect }) => (
+const seg_ = (C) => StyleSheet.create({
+  wrap: { flexDirection: "row", backgroundColor: C.surface, borderRadius: 12, padding: 3, marginBottom: 18 },
+  opt: { flex: 1, paddingVertical: 8, borderRadius: 10, alignItems: "center" },
+  optActive: { backgroundColor: C.card, shadowColor: "#000", shadowOpacity: 0.06, shadowRadius: 4, elevation: 2 },
+  txt: { fontSize: 13, fontWeight: "600", color: C.muted },
+  txtActive: { fontWeight: "700", color: C.primary },
+});
+
+const Seg = ({ options, selected, onSelect }) => {
+  const { colors: C } = useTheme();
+  const seg = seg_(C);
+  return (
   <View style={seg.wrap}>
     {options.map((o) => (
       <Pressable key={o} style={[seg.opt, selected === o && seg.optActive]} onPress={() => onSelect(o)}>
@@ -112,18 +129,34 @@ const Seg = ({ options, selected, onSelect }) => (
       </Pressable>
     ))}
   </View>
-);
-
-const seg = StyleSheet.create({
-  wrap: { flexDirection: "row", backgroundColor: "#F5F0F2", borderRadius: 12, padding: 3, marginBottom: 18 },
-  opt: { flex: 1, paddingVertical: 8, borderRadius: 10, alignItems: "center" },
-  optActive: { backgroundColor: "#fff", shadowColor: "#000", shadowOpacity: 0.06, shadowRadius: 4, elevation: 2 },
-  txt: { fontSize: 13, fontWeight: "600", color: "#9B8E93" },
-  txtActive: { fontWeight: "700", color: "#E8607A" },
-});
+  );
+};
 
 // ─── Sheet wrapper — compact, no emoji ───────────────────────────────────────
-const Sheet = ({ visible, title, onClose, onConfirm, confirmLabel = "Save", children }) => (
+const sh_ = (C) => StyleSheet.create({
+  overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.35)", justifyContent: "flex-end" },
+  card: {
+    backgroundColor: C.card,
+    borderTopLeftRadius: 24, borderTopRightRadius: 24,
+    paddingBottom: Platform.OS === "ios" ? 34 : 20,
+    maxHeight: "85%",
+  },
+  handle: { width: 36, height: 4, borderRadius: 2, backgroundColor: C.border, alignSelf: "center", marginTop: 12, marginBottom: 4 },
+  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 0.5, borderBottomColor: C.border },
+  title: { fontSize: 15, fontWeight: "700", color: C.text },
+  closeBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: C.surface, alignItems: "center", justifyContent: "center" },
+  body: { paddingHorizontal: 20, paddingVertical: 18 },
+  footer: { flexDirection: "row", gap: 10, paddingHorizontal: 20, paddingTop: 10 },
+  cancelBtn: { flex: 1, paddingVertical: 13, borderRadius: 14, backgroundColor: C.surface, alignItems: "center" },
+  cancelTxt: { fontSize: 14, fontWeight: "700", color: C.muted },
+  confirmBtn: { flex: 1.6, paddingVertical: 13, borderRadius: 14, backgroundColor: C.primary, alignItems: "center" },
+  confirmTxt: { fontSize: 14, fontWeight: "700", color: C.card },
+});
+
+const Sheet = ({ visible, title, onClose, onConfirm, confirmLabel = "Save", children }) => {
+  const { colors: C } = useTheme();
+  const sh = sh_(C);
+  return (
   <Modal visible={visible} transparent animationType="slide">
     <Pressable style={sh.overlay} onPress={onClose}>
       <Pressable style={sh.card} onPress={(e) => e.stopPropagation()}>
@@ -131,7 +164,7 @@ const Sheet = ({ visible, title, onClose, onConfirm, confirmLabel = "Save", chil
         <View style={sh.header}>
           <Text style={sh.title}>{title}</Text>
           <Pressable style={sh.closeBtn} onPress={onClose}>
-            <Ionicons name="close" size={18} color="#9B8E93" />
+            <Ionicons name="close" size={18} color={C.muted} />
           </Pressable>
         </View>
         <View style={sh.body}>{children}</View>
@@ -146,27 +179,8 @@ const Sheet = ({ visible, title, onClose, onConfirm, confirmLabel = "Save", chil
       </Pressable>
     </Pressable>
   </Modal>
-);
-
-const sh = StyleSheet.create({
-  overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.35)", justifyContent: "flex-end" },
-  card: {
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 24, borderTopRightRadius: 24,
-    paddingBottom: Platform.OS === "ios" ? 34 : 20,
-    maxHeight: "85%",
-  },
-  handle: { width: 36, height: 4, borderRadius: 2, backgroundColor: "#E5DDE0", alignSelf: "center", marginTop: 12, marginBottom: 4 },
-  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 0.5, borderBottomColor: "#F0E8EB" },
-  title: { fontSize: 15, fontWeight: "700", color: "#2D1B20" },
-  closeBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: "#F5F0F2", alignItems: "center", justifyContent: "center" },
-  body: { paddingHorizontal: 20, paddingVertical: 18 },
-  footer: { flexDirection: "row", gap: 10, paddingHorizontal: 20, paddingTop: 10 },
-  cancelBtn: { flex: 1, paddingVertical: 13, borderRadius: 14, backgroundColor: "#F5F0F2", alignItems: "center" },
-  cancelTxt: { fontSize: 14, fontWeight: "700", color: "#9B8E93" },
-  confirmBtn: { flex: 1.6, paddingVertical: 13, borderRadius: 14, backgroundColor: "#E8607A", alignItems: "center" },
-  confirmTxt: { fontSize: 14, fontWeight: "700", color: "#fff" },
-});
+  );
+};
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 const THEMES = [
@@ -320,13 +334,13 @@ export default function ProfileScreen({ navigation }) {
   const Row = ({ icon, label, value, onPress, isLast = false, rightNode = null }) => (
     <Pressable onPress={onPress} style={[s.row, !isLast && s.rowBorder]}>
       <View style={s.rowLeft}>
-        <View style={s.iconWrap}><Ionicons name={icon} size={16} color="#E8607A" /></View>
+        <View style={s.iconWrap}><Ionicons name={icon} size={16} color={C.primary} /></View>
         <Text style={s.rowLabel}>{label}</Text>
       </View>
       <View style={s.rowRight}>
         {rightNode || (<>
           {value !== undefined && <Text style={s.rowVal}>{value}</Text>}
-          {onPress && <Ionicons name="chevron-forward" size={14} color="#C5B8BC" />}
+          {onPress && <Ionicons name="chevron-forward" size={14} color={C.muted} />}
         </>)}
       </View>
     </Pressable>
@@ -503,7 +517,7 @@ export default function ProfileScreen({ navigation }) {
               <View style={sh.body}>
                 <TextInput
                   style={s.textInput} value={textVal} onChangeText={setTextVal}
-                  autoFocus placeholder={`Enter ${textLabel.toLowerCase()}`} placeholderTextColor="#C5B8BC"
+                   autoFocus placeholder={`Enter ${textLabel.toLowerCase()}`} placeholderTextColor={C.muted}
                 />
               </View>
               <View style={sh.footer}>
@@ -578,7 +592,7 @@ export default function ProfileScreen({ navigation }) {
               onPress={() => { setTempCountdown(parseInt(settings.countdownTime) || 10); setShowCountdown(true); }} />
             <Row icon="volume-medium-outline" label="Sound" isLast
               rightNode={<Switch value={!!settings.soundEnabled} onValueChange={() => toggleSetting("soundEnabled")}
-                trackColor={{ false: "#E0D8DB", true: "#E8607A" }} thumbColor="#fff" />} />
+                trackColor={{ false: C.border, true: C.primary }} thumbColor="#fff" />} />
           </View>
 
           {/* Preferences */}
@@ -601,12 +615,12 @@ export default function ProfileScreen({ navigation }) {
           </View>
 
           <Pressable style={s.resetBtn} onPress={handleReset}>
-            <Ionicons name="trash-outline" size={16} color="#E8607A" style={{ marginRight: 8 }} />
+            <Ionicons name="trash-outline" size={16} color={C.primary} style={{ marginRight: 8 }} />
             <Text style={s.resetTxt}>Reset all data</Text>
           </Pressable>
-          <Pressable style={[s.resetBtn, { borderColor: "#C5B8BC" }]} onPress={signOut}>
-            <Ionicons name="log-out-outline" size={16} color="#9B8E93" style={{ marginRight: 8 }} />
-            <Text style={[s.resetTxt, { color: "#9B8E93" }]}>Log out</Text>
+          <Pressable style={[s.resetBtn, { borderColor: C.muted + "60" }]} onPress={signOut}>
+            <Ionicons name="log-out-outline" size={16} color={C.muted} style={{ marginRight: 8 }} />
+            <Text style={[s.resetTxt, { color: C.muted }]}>Log out</Text>
           </Pressable>
           <Text style={s.version}>Version 2.2.7E</Text>
           <View style={{ height: 40 }} />
@@ -617,58 +631,58 @@ export default function ProfileScreen({ navigation }) {
 }
 
 const makeStyles = (C) => StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#FAF9FA" },
+  safe: { flex: 1, backgroundColor: C.bg },
   scroll: { paddingVertical: 20 },
   container: { width: "100%", maxWidth: 650, alignSelf: "center", paddingHorizontal: 20 },
 
   profileHeader: { alignItems: "center", marginBottom: 24 },
   avatarWrap: { position: "relative", marginBottom: 12 },
-  avatar: { width: 88, height: 88, borderRadius: 44, borderWidth: 2.5, borderColor: "#E8607A30" },
-  cameraBadge: { position: "absolute", bottom: 0, right: 0, width: 26, height: 26, borderRadius: 13, backgroundColor: "#E8607A", alignItems: "center", justifyContent: "center", borderWidth: 2, borderColor: "#FAF9FA" },
-  profileName: { fontSize: 20, fontWeight: "800", color: "#2D1B20", marginBottom: 3, textAlign: "center" },
-  profileEmail: { fontSize: 13, color: "#9B8E93", marginBottom: 12, textAlign: "center" },
-  bmiPill: { backgroundColor: "#E8607A12", borderRadius: 20, paddingHorizontal: 14, paddingVertical: 5 },
-  bmiTxt: { fontSize: 12, fontWeight: "700", color: "#E8607A" },
+  avatar: { width: 88, height: 88, borderRadius: 44, borderWidth: 2.5, borderColor: C.primary + "30" },
+  cameraBadge: { position: "absolute", bottom: 0, right: 0, width: 26, height: 26, borderRadius: 13, backgroundColor: C.primary, alignItems: "center", justifyContent: "center", borderWidth: 2, borderColor: C.bg },
+  profileName: { fontSize: 20, fontWeight: "800", color: C.text, marginBottom: 3, textAlign: "center" },
+  profileEmail: { fontSize: 13, color: C.muted, marginBottom: 12, textAlign: "center" },
+  bmiPill: { backgroundColor: C.primary + "12", borderRadius: 20, paddingHorizontal: 14, paddingVertical: 5 },
+  bmiTxt: { fontSize: 12, fontWeight: "700", color: C.primary },
 
   statsRow: { flexDirection: "row", gap: 10, marginBottom: 28 },
-  statCard: { flex: 1, backgroundColor: "#fff", borderRadius: 16, paddingVertical: 14, alignItems: "center", borderWidth: 0.5, borderColor: "#F0E8EB" },
+  statCard: { flex: 1, backgroundColor: C.card, borderRadius: 16, paddingVertical: 14, alignItems: "center", borderWidth: 0.5, borderColor: C.border },
   statIcon: { fontSize: 18, marginBottom: 5 },
-  statVal: { fontSize: 15, fontWeight: "800", color: "#2D1B20" },
-  statUnit: { fontSize: 10, fontWeight: "500", color: "#9B8E93" },
-  statLabel: { fontSize: 10, color: "#9B8E93", fontWeight: "600", marginTop: 2 },
+  statVal: { fontSize: 15, fontWeight: "800", color: C.text },
+  statUnit: { fontSize: 10, fontWeight: "500", color: C.muted },
+  statLabel: { fontSize: 10, color: C.muted, fontWeight: "600", marginTop: 2 },
 
-  section: { fontSize: 11, fontWeight: "700", color: "#9B8E93", letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 8, paddingLeft: 2 },
-  card: { backgroundColor: "#fff", borderRadius: 18, paddingHorizontal: 16, marginBottom: 22, borderWidth: 0.5, borderColor: "#F0E8EB" },
+  section: { fontSize: 11, fontWeight: "700", color: C.muted, letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 8, paddingLeft: 2 },
+  card: { backgroundColor: C.card, borderRadius: 18, paddingHorizontal: 16, marginBottom: 22, borderWidth: 0.5, borderColor: C.border },
   row: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 14 },
-  rowBorder: { borderBottomWidth: 0.5, borderBottomColor: "#F5EFF1" },
+  rowBorder: { borderBottomWidth: 0.5, borderBottomColor: C.border },
   rowLeft: { flexDirection: "row", alignItems: "center", flex: 1 },
-  iconWrap: { width: 30, height: 30, borderRadius: 8, backgroundColor: "#E8607A10", alignItems: "center", justifyContent: "center", marginRight: 12 },
-  rowLabel: { fontSize: 14, fontWeight: "600", color: "#2D1B20" },
+  iconWrap: { width: 30, height: 30, borderRadius: 8, backgroundColor: C.primary + "10", alignItems: "center", justifyContent: "center", marginRight: 12 },
+  rowLabel: { fontSize: 14, fontWeight: "600", color: C.text },
   rowRight: { flexDirection: "row", alignItems: "center", gap: 6 },
-  rowVal: { fontSize: 13, fontWeight: "600", color: "#9B8E93" },
+  rowVal: { fontSize: 13, fontWeight: "600", color: C.muted },
 
-  resetBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#E8607A30", borderRadius: 14, paddingVertical: 14, backgroundColor: "#fff", marginBottom: 12 },
-  resetTxt: { fontSize: 14, fontWeight: "700", color: "#E8607A" },
-  version: { textAlign: "center", fontSize: 11, color: "#C5B8BC", marginTop: 8, marginBottom: 4 },
+  resetBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: C.primary + "30", borderRadius: 14, paddingVertical: 14, backgroundColor: C.card, marginBottom: 12 },
+  resetTxt: { fontSize: 14, fontWeight: "700", color: C.primary },
+  version: { textAlign: "center", fontSize: 11, color: C.muted, marginTop: 8, marginBottom: 4 },
 
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8, justifyContent: "center", marginTop: 18 },
-  chip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 10, backgroundColor: "#F5F0F2", borderWidth: 1, borderColor: "#EDE6E9" },
-  chipActive: { backgroundColor: "#E8607A", borderColor: "#E8607A" },
-  chipTxt: { fontSize: 13, fontWeight: "600", color: "#9B8E93" },
-  chipTxtActive: { color: "#fff" },
+  chip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 10, backgroundColor: C.surface, borderWidth: 1, borderColor: C.border },
+  chipActive: { backgroundColor: C.primary, borderColor: C.primary },
+  chipTxt: { fontSize: 13, fontWeight: "600", color: C.muted },
+  chipTxtActive: { color: C.card },
 
   optList: { gap: 8 },
-  optRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 14, paddingVertical: 13, borderRadius: 12, borderWidth: 1, borderColor: "#EDE6E9", backgroundColor: "#FDFBFC" },
-  optRowActive: { borderColor: "#E8607A40", backgroundColor: "#FFF8F9" },
-  optTxt: { fontSize: 14, fontWeight: "600", color: "#6B5A5F" },
-  optTxtActive: { color: "#E8607A", fontWeight: "700" },
-  optSub: { fontSize: 11, color: "#9B8E93", marginTop: 2 },
+  optRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 14, paddingVertical: 13, borderRadius: 12, borderWidth: 1, borderColor: C.border, backgroundColor: C.surface },
+  optRowActive: { borderColor: C.primary + "40", backgroundColor: C.soft },
+  optTxt: { fontSize: 14, fontWeight: "600", color: C.muted },
+  optTxtActive: { color: C.primary, fontWeight: "700" },
+  optSub: { fontSize: 11, color: C.muted, marginTop: 2 },
 
   themeGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  themeCell: { width: "47%", flexDirection: "row", alignItems: "center", gap: 10, padding: 12, borderRadius: 12, borderWidth: 1.5, backgroundColor: "#FDFBFC", position: "relative" },
+  themeCell: { width: "47%", flexDirection: "row", alignItems: "center", gap: 10, padding: 12, borderRadius: 12, borderWidth: 1.5, backgroundColor: C.surface, position: "relative" },
   themeDot: { width: 28, height: 28, borderRadius: 14 },
-  themeName: { fontSize: 13, fontWeight: "600", color: "#6B5A5F", flex: 1 },
+  themeName: { fontSize: 13, fontWeight: "600", color: C.muted, flex: 1 },
   themeCheck: { position: "absolute", top: 6, right: 6, width: 18, height: 18, borderRadius: 9, alignItems: "center", justifyContent: "center" },
 
-  textInput: { borderWidth: 1, borderColor: "#EDE6E9", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16, fontWeight: "600", color: "#2D1B20", backgroundColor: "#FDFBFC" },
+  textInput: { borderWidth: 1, borderColor: C.border, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16, fontWeight: "600", color: C.text, backgroundColor: C.surface },
 });
