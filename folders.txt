@@ -1,0 +1,79 @@
+pulsefit/
+├─ assets/
+│  ├─ icons/
+│  ├─ images/
+│  └─ fonts/
+│
+├─ src/
+│  ├─ components/
+│  │  ├─ common/
+│  │  │  ├─ AppButton.js
+│  │  │  ├─ AppInput.js
+│  │  │  ├─ StatCard.js
+│  │  │  └─ EmptyState.js
+│  │  ├─ workout/
+│  │  │  ├─ WorkoutCard.js
+│  │  │  ├─ ExerciseRow.js
+│  │  │  └─ AddExerciseModal.js
+│  │  └─ progress/
+│  │     ├─ WeightChartCard.js
+│  │     └─ StreakBadge.js
+│  │
+│  ├─ screens/
+│  │  ├─ HomeScreen.js
+│  │  ├─ WorkoutsScreen.js
+│  │  ├─ WorkoutDetailScreen.js
+│  │  ├─ LogWorkoutScreen.js
+│  │  ├─ ProgressScreen.js
+│  │  ├─ NutritionScreen.js
+│  │  ├─ ProfileScreen.js
+│  │  └─ SettingsScreen.js
+│  │
+│  ├─ navigation/
+│  │  ├─ AppNavigator.js
+│  │  ├─ BottomTabs.js
+│  │  └─ routeNames.js
+│  │
+│  ├─ storage/
+│  │  ├─ asyncKeys.js
+│  │  ├─ storage.js
+│  │  ├─ workoutStorage.js
+│  │  ├─ nutritionStorage.js
+│  │  └─ profileStorage.js
+│  │
+│  ├─ context/
+│  │  ├─ AppProvider.js
+│  │  ├─ WorkoutContext.js
+│  │  ├─ NutritionContext.js
+│  │  └─ ProfileContext.js
+│  │
+│  ├─ hooks/
+│  │  ├─ useWorkouts.js
+│  │  ├─ useNutrition.js
+│  │  ├─ useProfile.js
+│  │  └─ useHydration.js
+│  │
+│  ├─ utils/
+│  │  ├─ date.js
+│  │  ├─ calculations.js
+│  │  ├─ validators.js
+│  │  └─ constants.js
+│  │
+│  ├─ theme/
+│  │  ├─ colors.js
+│  │  ├─ spacing.js
+│  │  ├─ typography.js
+│  │  └─ index.js
+│  │
+│  ├─ data/
+│  │  ├─ defaultPlans.js
+│  │  └─ exerciseLibrary.js
+│  │
+│  └─ types/
+│     └─ index.js
+│
+├─ App.js
+├─ app.json
+├─ babel.config.js
+├─ package.json
+└─ README.md
