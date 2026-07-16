@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { SafeAreaView, View, Text, StyleSheet, Image, Pressable, Dimensions, Alert, Platform, StatusBar } from "react-native";
+import { SafeAreaView, View, Text, StyleSheet, Image, Pressable, Alert, Platform, StatusBar, useWindowDimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { C } from "../theme/colors";
+import { useTheme } from "../context/ThemeContext";
 import { addWorkoutStat } from "../storage/fitnessStorage";
-
-const { width, height } = Dimensions.get("window");
 
 const MOCK_EXERCISES = [
   { id: "e1", title: "Jumping Jacks", duration: 30, image: "https://images.pexels.com/photos/3757377/pexels-photo-3757377.jpeg" },
@@ -15,6 +13,8 @@ const MOCK_EXERCISES = [
 ];
 
 export default function LogWorkoutScreen({ route, navigation }) {
+  const { colors: C } = useTheme();
+  const { height } = useWindowDimensions();
   const { workout } = route.params || { workout: { title: "Workout" } };
   const [currentExIndex, setCurrentExIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(MOCK_EXERCISES[0].duration);
@@ -64,6 +64,8 @@ export default function LogWorkoutScreen({ route, navigation }) {
     const s = seconds % 60;
     return `${m}:${s < 10 ? '0' : ''}${s}`;
   };
+
+  const styles = makeStyles(C, height);
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -152,7 +154,7 @@ export default function LogWorkoutScreen({ route, navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (C, height) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#FAF9FA" },
   header: { 
     flexDirection: "row", alignItems: "center", justifyContent: "space-between", 

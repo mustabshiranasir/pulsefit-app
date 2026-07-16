@@ -8,21 +8,20 @@ import {
   KeyboardAvoidingView,
   Platform,
   ImageBackground,
-  Dimensions,
   Animated,
   StatusBar,
   Modal,
   ScrollView,
+  useWindowDimensions,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
-import { C } from "../theme/colors";
+import { useTheme } from "../context/ThemeContext";
 import { validateLogin, registerUser } from "../storage/fitnessStorage";
 
-const { width, height } = Dimensions.get("window");
-
 export default function LoginScreen() {
+  const { colors: C } = useTheme();
   const { signIn } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
@@ -160,6 +159,8 @@ export default function LoginScreen() {
       }
     }
   };
+
+  const styles = makeStyles(C);
 
   return (
     <View style={styles.container}>
@@ -470,7 +471,7 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (C) => StyleSheet.create({
   container: {
     flex: 1,
   },

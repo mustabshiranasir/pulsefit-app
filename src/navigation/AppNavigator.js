@@ -1,5 +1,5 @@
 import React from "react";
-import { View, ActivityIndicator } from "react-native";
+import { View, ActivityIndicator, StyleSheet } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import BottomTabs from "./BottomTabs";
@@ -17,14 +17,14 @@ export default function AppNavigator() {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: C.bg }}>
+      <View style={styles.loading}>
         <ActivityIndicator size="large" color={C.primary} />
       </View>
     );
   }
 
   return (
-    <NavigationContainer style={{ width: "100%", height: "100%" }}>
+    <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {!user ? (
           <Stack.Screen name="Login" component={LoginScreen} />
@@ -40,3 +40,13 @@ export default function AppNavigator() {
     </NavigationContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  loading: {
+    flex: 1,
+    width: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: C.bg,
+  },
+});

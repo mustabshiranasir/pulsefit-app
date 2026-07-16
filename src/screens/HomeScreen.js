@@ -24,36 +24,14 @@ import {
   TextInput,
   TouchableWithoutFeedback,
   View,
+  useWindowDimensions,
 } from "react-native";
 import DrawerMenu from "../components/DrawerMenu";
 import { addWorkoutStat } from "../storage/fitnessStorage";
 import { useAuth } from "../context/AuthContext";
-
-// Screen width for responsive card widths
-const { width } = Dimensions.get("window");
-
-// Theme tokens — used across styles
-const C = {
-  bg: "#FBF7F4",
-  card: "#FFFFFF",
-  primary: "#E8607A",
-  accent: "#F4A261",
-  purple: "#9B72CF",
-  teal: "#3BBFA0",
-  soft: "#FFF0F3",
-  text: "#1C1C2E",
-  muted: "#9499A8",
-  border: "#F0EAE4",
-};
+import { useTheme } from "../context/ThemeContext";
 
 import StickyNavbar from "../components/StickyNavbar";
-
-// Layout constants
-const CHALLENGE_W = Math.min(width * 0.78, 320);
-const CHALLENGE_H = Math.min(width * 0.72, 290);
-const DRAWER_W = width >= 768 ? 320 : width * 0.8;
-const YML_W = Math.min(width * 0.78, 410);
-const WORKOUT_CARD_W = Math.min(width * 0.98, 380);
 
 // Drawer menu items (ids used with activeTab for highlight only)
 const DRAWER_TABS = [
@@ -178,10 +156,229 @@ const YOU_MAY_LIKE = [
 
 // DrawerMenu component moved to src/components/DrawerMenu.js
 
+// ── Theme-aware stylesheet factory
+const createStyles = (C, width) => StyleSheet.create({
+  safe: { flex: 1, backgroundColor: C.bg },
+  scroll: { paddingVertical: 10 },
+  responsiveContainer: { width: '100%', maxWidth: 768, alignSelf: 'center', paddingHorizontal: 12 },
+
+  /* ==================== COMMON SECTION STYLES ==================== */
+  sectionRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 },
+  sectionTitle: { fontSize: 19, fontWeight: "800", color: C.text },
+  sectionSub: { fontSize: 12, color: C.muted, fontWeight: "500", marginTop: 3 },
+  viewAll: { fontSize: 13, fontWeight: "700", color: C.primary, marginTop: 6 },
+
+  /* ==================== CHALLENGE CARDS ==================== */
+  challengeCard: {
+    width: Math.min(width * 0.78, 320),
+    height: Math.min(width * 0.72, 290),
+    borderRadius: 20,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.10,
+    shadowRadius: 10,
+    elevation: 6,
+  },
+  challengeTagPill: {
+    position: "absolute",
+    top: 10,
+    left: 10,
+    zIndex: 2,
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  challengeTagTxt: { fontSize: 11, fontWeight: "800", letterSpacing: 0.2 },
+  challengeImg: { width: "100%", height: Math.min(width * 0.72, 290) * 0.62 },
+  challengeBottom: { flex: 1, paddingHorizontal: 12, paddingVertical: 10, justifyContent: "space-between" },
+  challengeTitle: { fontSize: 14, fontWeight: "800", color: C.text, lineHeight: 19, marginBottom: 6 },
+
+  /* ==================== CLASSIC WORKOUT CARD CAPTION ==================== */
+  captionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 6,
+    flexWrap: "wrap",
+  },
+  captionItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    marginRight: 10,
+  },
+  captionText: {
+    fontSize: 12,
+    color: C.muted,
+    fontWeight: "600",
+  },
+  levelPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 20,
+    marginLeft: "auto",
+  },
+  levelText: {
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 0.3,
+  },
+
+  /* ==================== START BUTTON ==================== */
+  startBtn: { borderRadius: 10, paddingVertical: 8, alignItems: "center" },
+  startBtnTxt: { fontSize: 13, fontWeight: "800", color: "#fff", letterSpacing: 0.3 },
+
+  /* ==================== PROGRESS BANNER ==================== */
+  progressBanner: { flexDirection: "row", alignItems: "center", backgroundColor: C.soft, borderRadius: 18, paddingHorizontal: 14, paddingVertical: 13, borderWidth: 1, borderColor: C.primary + "22", justifyContent: "space-between" },
+  progressLeft: { flexDirection: "row", alignItems: "center", gap: 12, flex: 1 },
+  progressIconWrap: { width: 42, height: 42, borderRadius: 21, backgroundColor: C.primary + "16", alignItems: "center", justifyContent: "center" },
+  progressTitle: { fontSize: 14, fontWeight: "800", color: C.text, marginBottom: 3 },
+  progressSub: { fontSize: 11, color: C.muted, fontWeight: "500" },
+  progressArrow: { width: 32, height: 32, borderRadius: 16, backgroundColor: C.primary, alignItems: "center", justifyContent: "center" },
+
+  /* ==================== PICKS FOR TODAY ==================== */
+  pickCard: {
+    width: width * 0.89,
+    maxWidth: 430,
+    height: 230,
+    alignSelf: "center",
+    borderRadius: 22,
+    overflow: "hidden",
+    backgroundColor: "#d7ccf4",
+    position: "relative",
+    marginHorizontal: 0,
+  },
+  pickImg: { ...StyleSheet.absoluteFillObject, resizeMode: "cover", opacity: 0.95 },
+  pickOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(191, 180, 226, 0.28)" },
+  pickDate: {
+    position: "absolute",
+    height: 50,
+    top: 10,
+    right: 10,
+    backgroundColor: C.primary + "cc",
+    borderRadius: 18,
+    paddingHorizontal: 10,
+    paddingVertical: 2,
+    alignItems: "center",
+  },
+  pickDateWeekday: {
+    fontSize: 7,
+    color: "#0f0e0e",
+    backgroundColor: C.card,
+    borderRadius: 4,
+    fontWeight: "800",
+    letterSpacing: 0.8,
+    opacity: 0.9,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    marginBottom: 2,
+  },
+  pickDateMonth: { fontSize: 9, color: "#fff", fontWeight: "600", opacity: 0.8 },
+  pickDateDay: { fontSize: 16, color: "#fff", fontWeight: "900" },
+  pickInfo: { position: "absolute", bottom: 16, left: 16 },
+  pickTitle: { fontSize: 17, fontWeight: "800", color: "#fff" },
+  pickMins: { fontSize: 13, color: "#fff", opacity: 0.85, fontWeight: "500", marginTop: 2 },
+  pickPlay: {
+    position: "absolute",
+    bottom: 16,
+    right: 16,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
+  },
+
+  /* ==================== CHIPS & SEARCH ==================== */
+  chipScroll: { marginBottom: 10, paddingHorizontal: 2 },
+  chip: { paddingHorizontal: 15, paddingVertical: 8, borderRadius: 24, backgroundColor: C.card, borderWidth: 1.5, borderColor: C.border },
+  chipActive: { borderColor: C.primary },
+  chipTxt: { fontSize: 13, fontWeight: "600", color: C.muted },
+  chipTxtActive: { color: C.primary, fontWeight: "800" },
+
+  searchWrap: {
+    width: "100%",
+    height: 44,
+    borderRadius: 14,
+    borderWidth: 0,
+    borderColor: C.border,
+    backgroundColor: C.card,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingLeft: 12,
+    marginBottom: 14,
+  },
+  searchWrapFocused: { borderColor: C.primary, borderWidth: 1.5 },
+  searchInput: { flex: 1, fontSize: 13, color: C.text, paddingVertical: 0, borderWidth: 0, outlineStyle: "none" },
+  searchBtn: { width: 94, height: 44, borderRadius: 14, backgroundColor: C.primary, alignItems: "center", justifyContent: "center" },
+  searchBtnTxt: { color: "#fff", fontSize: 12, fontWeight: "800" },
+
+  /* ==================== CLASSIC WORKOUT CARDS ==================== */
+  classicWorkoutBottomRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 },
+  classicWorkoutTextWrap: { flex: 1, paddingRight: 17 },
+  classicStartBtn: { backgroundColor: C.primary, minWidth: 72, paddingHorizontal: 12, paddingVertical: 6, marginTop: 0 },
+  classicWorkoutCard: {
+    width: Math.min(width * 0.98, 380),
+    maxWidth: 420,
+    height: 280,
+    gap: 5,
+    margin: 6,
+    backgroundColor: C.card,
+    borderRadius: 22,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
+  classicWorkoutImg: { width: "100%", height: 200, resizeMode: "cover" },
+  classicWorkoutInfo: { padding: 13 },
+  classicWorkoutTitle: { fontSize: 14, fontWeight: "700", color: C.text, marginBottom: 6, lineHeight: 20 },
+
+  /* ==================== VIEW ALL & YOU MAY LIKE ==================== */
+  viewAllInlineBtn: {
+    backgroundColor: C.soft,
+    paddingVertical: 6,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: C.primary,
+    marginLeft: 10,
+    marginRight: 6,
+    height: 42,
+    minWidth: 80,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  viewAllInlineWrap: { height: 260, justifyContent: "center", alignItems: "center" },
+
+  ymlCard: { width: Math.min(width * 0.78, 410), backgroundColor: "#fff", borderRadius: 22, padding: 16, shadowColor: "#000", shadowOpacity: 0.05, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 2 },
+  ymlCardTitle: { fontSize: 17, fontWeight: "700", color: C.text, marginBottom: 10 },
+  ymlRow: { flexDirection: "row", alignItems: "center", paddingVertical: 9, gap: 12, borderTopWidth: 1, borderTopColor: C.border },
+  ymlRowImg: { width: 62, height: 62, borderRadius: 13, backgroundColor: "#eee" },
+  ymlRowInfo: { flex: 1 },
+  ymlRowTitle: { fontSize: 13, fontWeight: "700", color: C.text, marginBottom: 3 },
+  ymlRowMins: { fontSize: 11, color: C.muted, fontWeight: "500" },
+
+  moreBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, backgroundColor: C.soft, borderRadius: 18, paddingVertical: 15, borderWidth: 1.5, borderColor: C.primary + "30", width: width * 0.95, maxWidth: 220, alignSelf: "center" },
+  moreBtnTxt: { fontSize: 15, fontWeight: "800", color: C.primary },
+});
+
 // ── Challenge carousel card
 function ChallengeCard({ item, navigation }) {
+  const { colors: C } = useTheme();
+  const { width } = useWindowDimensions();
+  const styles = createStyles(C, width);
+
   return (
-    <Pressable style={[styles.challengeCard, { backgroundColor: item.bg }]} onPress={() => navigation.navigate("WorkoutDetail", { workout: item })}>
+    <Pressable style={styles.challengeCard} onPress={() => navigation.navigate("WorkoutDetail", { workout: item })}>
       <View style={[styles.challengeTagPill, { backgroundColor: item.accent + "22" }]}>
         <Text style={[styles.challengeTagTxt, { color: item.accent }]}>{item.tag}</Text>
       </View>
@@ -198,6 +395,9 @@ function ChallengeCard({ item, navigation }) {
 
 // ── Classic workout horizontal card with caption (Time + Cal + Level)
 function ClassicWorkoutCard({ item, navigation }) {
+  const { colors: C } = useTheme();
+  const { width } = useWindowDimensions();
+  const styles = createStyles(C, width);
   const levelColor =
     item.level === "Advanced" ? "#9B72CF" :
       item.level === "Intermediate" ? "#F4A261" : "#3BBFA0";
@@ -237,6 +437,10 @@ function ClassicWorkoutCard({ item, navigation }) {
 }
 
 function YouMayLikeCard({ item, navigation }) {
+  const { colors: C } = useTheme();
+  const { width } = useWindowDimensions();
+  const styles = createStyles(C, width);
+
   return (
     <View style={styles.ymlCard}>
       <Text style={styles.ymlCardTitle}>{item.title}</Text>
@@ -254,6 +458,8 @@ function YouMayLikeCard({ item, navigation }) {
 }
 
 export default function HomeScreen({ navigation }) {
+  const { colors: C } = useTheme();
+  const { width } = useWindowDimensions();
   const { user } = useAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("Home");
@@ -262,6 +468,8 @@ export default function HomeScreen({ navigation }) {
   const [searchFocused, setSearchFocused] = useState(false);
   // Sticky navbar: toggles style after small scroll
   const [navScrolled, setNavScrolled] = useState(false);
+
+  const styles = createStyles(C, width);
 
   const workouts = CLASSIC_WORKOUTS[activeCat] ?? [];
   const filteredWorkouts = workouts.filter((item) =>
@@ -281,9 +489,9 @@ export default function HomeScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.safe}>
       {/* Sticky Top Navbar */}
-      <StickyNavbar 
-        navScrolled={navScrolled} 
-        onMenuPress={() => setDrawerOpen(true)} 
+      <StickyNavbar
+        navScrolled={navScrolled}
+        onMenuPress={() => setDrawerOpen(true)}
         subtitle={user ? `Hi, ${user.name.split(' ')[0]}!` : "Female Fitness"}
       />
 
@@ -442,222 +650,3 @@ export default function HomeScreen({ navigation }) {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: C.bg },
-  scroll: { paddingVertical: 10 },
-  responsiveContainer: { width: '100%', maxWidth: 768, alignSelf: 'center',paddingHorizontal: 12 },
-  
-  /* ==================== NAVBAR ==================== */
-  // Moved to StickyNavbar.js
-
-  /* ==================== COMMON SECTION STYLES ==================== */
-  sectionRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 },
-  sectionTitle: { fontSize: 19, fontWeight: "800", color: C.text },
-  sectionSub: { fontSize: 12, color: C.muted, fontWeight: "500", marginTop: 3 },
-  viewAll: { fontSize: 13, fontWeight: "700", color: C.primary, marginTop: 6 },
-
-  /* ==================== CHALLENGE CARDS ==================== */
-  challengeCard: {
-    width: CHALLENGE_W,
-    height: CHALLENGE_H,
-    borderRadius: 20,
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.10,
-    shadowRadius: 10,
-    elevation: 6,
-  },
-  challengeTagPill: {
-    position: "absolute",
-    top: 10,
-    left: 10,
-    zIndex: 2,
-    borderRadius: 20,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  challengeTagTxt: { fontSize: 11, fontWeight: "800", letterSpacing: 0.2 },
-  challengeImg: { width: "100%", height: CHALLENGE_H * 0.62 },
-  challengeBottom: { flex: 1, paddingHorizontal: 12, paddingVertical: 10, justifyContent: "space-between" },
-  challengeTitle: { fontSize: 14, fontWeight: "800", color: C.text, lineHeight: 19, marginBottom: 6 },
-
-  /* ==================== CLASSIC WORKOUT CARD CAPTION ==================== */
-  captionRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: 6,
-    flexWrap: "wrap",
-  },
-  captionItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    marginRight: 10,
-  },
-  captionText: {
-    fontSize: 12,
-    color: C.muted,
-    fontWeight: "600",
-  },
-  levelPill: {
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    borderRadius: 20,
-    marginLeft: "auto",
-  },
-  levelText: {
-    fontSize: 11,
-    fontWeight: "800",
-    letterSpacing: 0.3,
-  },
-
-  /* ==================== START BUTTON ==================== */
-  startBtn: { borderRadius: 10, paddingVertical: 8, alignItems: "center" },
-  startBtnTxt: { fontSize: 13, fontWeight: "800", color: "#fff", letterSpacing: 0.3 },
-
-  /* ==================== PROGRESS BANNER ==================== */
-  progressBanner: { flexDirection: "row", alignItems: "center", backgroundColor: C.soft, borderRadius: 18, paddingHorizontal: 14, paddingVertical: 13, borderWidth: 1, borderColor: C.primary + "22", justifyContent: "space-between" },
-  progressLeft: { flexDirection: "row", alignItems: "center", gap: 12, flex: 1 },
-  progressIconWrap: { width: 42, height: 42, borderRadius: 21, backgroundColor: C.primary + "16", alignItems: "center", justifyContent: "center" },
-  progressTitle: { fontSize: 14, fontWeight: "800", color: C.text, marginBottom: 3 },
-  progressSub: { fontSize: 11, color: C.muted, fontWeight: "500" },
-  progressArrow: { width: 32, height: 32, borderRadius: 16, backgroundColor: C.primary, alignItems: "center", justifyContent: "center" },
-
-  /* ==================== PICKS FOR TODAY ==================== */
-  pickCard: {
-    width: width * 0.89,
-    maxWidth: 430,
-    height: 230,
-    alignSelf: "center",
-    borderRadius: 22,
-    overflow: "hidden",
-    backgroundColor: "#d7ccf4",
-    position: "relative",
-    marginHorizontal: 0,
-  },
-  pickImg: { ...StyleSheet.absoluteFillObject, resizeMode: "cover", opacity: 0.95 },
-  pickOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(191, 180, 226, 0.28)" },
-  pickDate: {
-    position: "absolute",
-    height: 50,
-    top: 10,
-    right: 10,
-    backgroundColor: C.primary + "cc",
-    borderRadius: 18,
-    paddingHorizontal: 10,
-    paddingVertical: 2,
-    alignItems: "center",
-  },
-  pickDateWeekday: {
-    fontSize: 7,
-    color: "#0f0e0e",
-    backgroundColor: C.card,
-    borderRadius: 4,
-    fontWeight: "800",
-    letterSpacing: 0.8,
-    opacity: 0.9,
-    paddingHorizontal: 4,
-    paddingVertical: 1,
-    marginBottom: 2,
-  },
-  pickDateMonth: { fontSize: 9, color: "#fff", fontWeight: "600", opacity: 0.8 },
-  pickDateDay: { fontSize: 16, color: "#fff", fontWeight: "900" },
-  pickInfo: { position: "absolute", bottom: 16, left: 16 },
-  pickTitle: { fontSize: 17, fontWeight: "800", color: "#fff" },
-  pickMins: { fontSize: 13, color: "#fff", opacity: 0.85, fontWeight: "500", marginTop: 2 },
-  pickPlay: {
-    position: "absolute",
-    bottom: 16,
-    right: 16,
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 3,
-  },
-
-  /* ==================== CHIPS & SEARCH ==================== */
-  chipScroll: { marginBottom: 10, paddingHorizontal: 2 },
-  chip: { paddingHorizontal: 15, paddingVertical: 8, borderRadius: 24, backgroundColor: C.card, borderWidth: 1.5, borderColor: C.border },
-  chipActive: { borderColor: C.primary },
-  chipTxt: { fontSize: 13, fontWeight: "600", color: C.muted },
-  chipTxtActive: { color: C.primary, fontWeight: "800" },
-
-  searchWrap: {
-    width: "100%",
-    height: 44,
-    borderRadius: 14,
-    borderWidth: 0,
-    borderColor: C.border,
-    backgroundColor: C.card,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingLeft: 12,
-    marginBottom: 14,
-  },
-  searchWrapFocused: { borderColor: C.primary, borderWidth: 1.5 },
-  searchInput: { flex: 1, fontSize: 13, color: C.text, paddingVertical: 0, borderWidth: 0, outlineStyle: "none" },
-  searchBtn: { width: 94, height: 44, borderRadius: 14, backgroundColor: C.primary, alignItems: "center", justifyContent: "center" },
-  searchBtnTxt: { color: "#fff", fontSize: 12, fontWeight: "800" },
-
-  /* ==================== CLASSIC WORKOUT CARDS ==================== */
-  classicWorkoutBottomRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10,  },
-  classicWorkoutTextWrap: { flex: 1, paddingRight: 17 },
-  classicStartBtn: { backgroundColor: C.primary, minWidth: 72, paddingHorizontal: 12, paddingVertical: 6, marginTop: 0},
-  classicWorkoutCard: {
-    width: WORKOUT_CARD_W,
-    maxWidth: 420,
-    height: 280,
-    gap: 5,
-    margin: 6,
-    backgroundColor: C.card,
-    borderRadius: 22,
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
-  },
-  classicWorkoutImg: { width: "100%", height: 200, resizeMode: "cover" },
-  classicWorkoutInfo: { padding: 13, },
-  classicWorkoutTitle: { fontSize: 14, fontWeight: "700", color: C.text, marginBottom: 6, lineHeight: 20 },
-
-  /* ==================== VIEW ALL & YOU MAY LIKE ==================== */
-  viewAllInlineBtn: {
-    backgroundColor: C.soft,
-    paddingVertical: 6,
-    borderRadius: 14,
-    borderWidth: 1.5,
-    borderColor: C.primary,
-    marginLeft: 10,
-    marginRight: 6,
-    height: 42,
-    minWidth: 80,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  viewAllInlineWrap: { height: 260, justifyContent: "center", alignItems: "center" },
-
-  ymlCard: { width: YML_W, backgroundColor: "#fff", borderRadius: 22, padding: 16, shadowColor: "#000", shadowOpacity: 0.05, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 2 },
-  ymlCardTitle: { fontSize: 17, fontWeight: "700", color: C.text, marginBottom: 10 },
-  ymlRow: { flexDirection: "row", alignItems: "center", paddingVertical: 9, gap: 12, borderTopWidth: 1, borderTopColor: C.border },
-  ymlRowImg: { width: 62, height: 62, borderRadius: 13, backgroundColor: "#eee" },
-  ymlRowInfo: { flex: 1 },
-  ymlRowTitle: { fontSize: 13, fontWeight: "700", color: C.text, marginBottom: 3 },
-  ymlRowMins: { fontSize: 11, color: C.muted, fontWeight: "500" },
-
-  moreBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, backgroundColor: C.soft, borderRadius: 18, paddingVertical: 15, borderWidth: 1.5, borderColor: C.primary + "30", width: width * 0.95, maxWidth: 220, alignSelf: "center" },
-  moreBtnTxt: { fontSize: 15, fontWeight: "800", color: C.primary },
-
-  // Drawer styles moved to components/DrawerMenu.js
-});

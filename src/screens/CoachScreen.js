@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import { SafeAreaView, View, Text, StyleSheet, TextInput, Pressable, ScrollView, Image, KeyboardAvoidingView, Platform, Dimensions } from "react-native";
+import { SafeAreaView, View, Text, StyleSheet, TextInput, Pressable, ScrollView, Image, KeyboardAvoidingView, Platform, useWindowDimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { C } from "../theme/colors";
+import { useTheme } from "../context/ThemeContext";
 import DrawerMenu from "../components/DrawerMenu";
 import StickyNavbar from "../components/StickyNavbar";
 import { getChatHistory, saveChatMessage, getNutritionData, getWeightHistory, getWorkoutStats, getProfile } from "../storage/fitnessStorage";
 import { useAuth } from "../context/AuthContext";
-
-const { height } = Dimensions.get('window');
 
 const SUGGESTED_QUESTIONS = [
   "Why don't I feel my abs working during core exercises?",
@@ -22,6 +20,8 @@ const CHIPS = [
 ];
 
 export default function CoachScreen({ navigation }) {
+  const { colors: C } = useTheme();
+  const { height } = useWindowDimensions();
   const { user } = useAuth();
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState("");
@@ -117,9 +117,9 @@ export default function CoachScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={styles(C).safe}>
       <KeyboardAvoidingView
-        style={styles.container}
+        style={styles(C).container}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <DrawerMenu
@@ -132,7 +132,7 @@ export default function CoachScreen({ navigation }) {
           }}
         />
 
-        <View style={styles.responsiveContainer}>
+        <View style={styles(C).responsiveContainer}>
           {/* Header */}
           <StickyNavbar
             navScrolled={false}
@@ -143,51 +143,51 @@ export default function CoachScreen({ navigation }) {
           {/* Chat ScrollView */}
           <ScrollView
             ref={scrollViewRef}
-            style={styles.chatArea}
-            contentContainerStyle={styles.chatContent}
+            style={styles(C).chatArea}
+            contentContainerStyle={styles(C).chatContent}
             onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
           >
             {messages.map((msg) => (
-              <View key={msg.id} style={[styles.messageBubble, msg.isUser ? styles.messageUser : styles.messageBot]}>
-                <Text style={msg.isUser ? styles.messageTextUser : styles.messageTextBot}>{msg.text}</Text>
+              <View key={msg.id} style={[styles(C).messageBubble, msg.isUser ? styles(C).messageUser : styles(C).messageBot]}>
+                <Text style={msg.isUser ? styles(C).messageTextUser : styles(C).messageTextBot}>{msg.text}</Text>
               </View>
             ))}
 
             {/* Suggested Questions Box */}
-            <View style={styles.suggestedBox}>
-              <View style={styles.suggestedHeader}>
-                <Text style={styles.suggestedTitle}>You may want to know...</Text>
+            <View style={styles(C).suggestedBox}>
+              <View style={styles(C).suggestedHeader}>
+                <Text style={styles(C).suggestedTitle}>You may want to know...</Text>
                 <Ionicons name="refresh" size={18} color={C.muted} />
               </View>
               {SUGGESTED_QUESTIONS.map((q, idx) => (
-                <Pressable key={idx} style={styles.suggestedItem} onPress={() => handleSend(q)}>
-                  <Text style={styles.bulbIcon}>💡</Text>
-                  <Text style={styles.suggestedText}>{q}</Text>
+                <Pressable key={idx} style={styles(C).suggestedItem} onPress={() => handleSend(q)}>
+                  <Text style={styles(C).bulbIcon}>💡</Text>
+                  <Text style={styles(C).suggestedText}>{q}</Text>
                 </Pressable>
               ))}
             </View>
           </ScrollView>
 
           {/* Bottom Area */}
-          <View style={styles.bottomArea}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipScroll}>
+          <View style={styles(C).bottomArea}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles(C).chipScroll}>
               {CHIPS.map((chip, idx) => (
-                <Pressable key={idx} style={styles.chip} onPress={() => handleSend(chip.label)}>
-                  <Text style={styles.chipText}>{chip.icon} {chip.label}</Text>
+                <Pressable key={idx} style={styles(C).chip} onPress={() => handleSend(chip.label)}>
+                  <Text style={styles(C).chipText}>{chip.icon} {chip.label}</Text>
                 </Pressable>
               ))}
             </ScrollView>
 
-            <View style={styles.inputContainer}>
+            <View style={styles(C).inputContainer}>
               <TextInput
-                style={styles.input}
+                style={styles(C).input}
                 placeholder="Enter your question"
                 placeholderTextColor={C.muted}
                 value={inputText}
                 onChangeText={setInputText}
                 onSubmitEditing={() => handleSend()}
               />
-              <Pressable style={styles.sendBtn} onPress={() => handleSend()}>
+              <Pressable style={styles(C).sendBtn} onPress={() => handleSend()}>
                 <Ionicons name="paper-plane" size={20} color="#fff" />
               </Pressable>
             </View>
@@ -198,7 +198,7 @@ export default function CoachScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = (C) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#FAF9FA' },
   container: { flex: 1 },
   responsiveContainer: { flex: 1, width: '100%', maxWidth: 768, alignSelf: 'center' },

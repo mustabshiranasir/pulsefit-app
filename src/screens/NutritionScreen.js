@@ -18,8 +18,9 @@ import { useFocusEffect } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useCallback, useState } from "react";
 import {
-    Alert, Dimensions, Image, KeyboardAvoidingView, Modal, Platform,
+    Alert, Image, KeyboardAvoidingView, Modal, Platform,
     Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View,
+    useWindowDimensions,
 } from "react-native";
 import Svg, { Circle, G } from "react-native-svg";
 import DraggableCoach from "../components/DraggableCoach";
@@ -31,11 +32,12 @@ import {
     deleteMealItem,
     clearMeal,
 } from "../storage/fitnessStorage";
-import { C } from "../theme/colors";
-
-const { width } = Dimensions.get("window");
+import { useTheme } from "../context/ThemeContext";
 
 export default function NutritionScreen({ navigation }) {
+    const { colors: C } = useTheme();
+    const { width } = useWindowDimensions();
+
     // ── UI state ──────────────────────────────────────────────────────────────
     const [navScrolled, setNavScrolled] = useState(false);
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -335,6 +337,8 @@ export default function NutritionScreen({ navigation }) {
             </View>
         );
     };
+
+    const styles = makeStyles(C, width);
 
     // ── Render ────────────────────────────────────────────────────────────────
     return (
@@ -656,7 +660,7 @@ export default function NutritionScreen({ navigation }) {
     );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (C, width) => StyleSheet.create({
     safe: { flex: 1, backgroundColor: "#FAF9FA" },
     scroll: { flex: 1 },
     responsiveContainer: { width: "100%", maxWidth: 650, alignSelf: "center", paddingHorizontal: 20, paddingTop: 20 },

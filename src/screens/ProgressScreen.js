@@ -1,17 +1,17 @@
 import React, { useState, useCallback } from "react";
-import { SafeAreaView, ScrollView, StyleSheet, Text, View, Pressable, TextInput, Dimensions, Modal, KeyboardAvoidingView, Platform, StatusBar, Alert } from "react-native";
+import { SafeAreaView, ScrollView, StyleSheet, Text, View, Pressable, TextInput, useWindowDimensions, Modal, KeyboardAvoidingView, Platform, StatusBar, Alert } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import Svg, { Line, Circle, Text as SvgText, Rect, Defs, LinearGradient as SvgLinearGradient, Stop } from "react-native-svg";
-import { C } from "../theme/colors";
+import { useTheme } from "../context/ThemeContext";
 import StickyNavbar from "../components/StickyNavbar";
 import DrawerMenu from "../components/DrawerMenu";
 import DraggableCoach from "../components/DraggableCoach";
 import { getWorkoutStats, getWeightHistory, saveWeight, getProfile, saveProfile } from "../storage/fitnessStorage";
 
-const { width, height: screenHeight } = Dimensions.get("window");
-
 export default function ProgressScreen({ navigation }) {
+  const { colors: C } = useTheme();
+  const { width } = useWindowDimensions();
   const [navScrolled, setNavScrolled] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeDrawerTab, setActiveDrawerTab] = useState("Progress");
@@ -110,7 +110,7 @@ export default function ProgressScreen({ navigation }) {
     const stepX = chartWidth / 6;
 
     return (
-      <View style={styles.chartContainer}>
+      <View style={styles(C, width).chartContainer}>
         <Svg width={containerInnerWidth} height={chartHeight + 40}>
           {yLabels.map((lbl, idx) => (
             <React.Fragment key={idx}>
@@ -133,7 +133,7 @@ export default function ProgressScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={styles(C, width).safe}>
       <StatusBar barStyle="dark-content" />
       <StickyNavbar navScrolled={navScrolled} onMenuPress={() => setDrawerOpen(true)} title="REPORT" subtitle=" " />
 
@@ -149,53 +149,53 @@ export default function ProgressScreen({ navigation }) {
       <DraggableCoach onPress={() => navigation.navigate("Coach")} />
 
       <ScrollView 
-        showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false} contentContainerStyle={styles(C, width).scroll}
         onScroll={handleScroll} scrollEventThrottle={16}
       >
-        <View style={styles.responsiveContainer}>
+        <View style={styles(C, width).responsiveContainer}>
           {/* Top Summary Stats */}
-          <View style={styles.statsCard}>
-            <View style={styles.statCol}>
-              <View style={[styles.statIconBox, { backgroundColor: '#FFEDF1' }]}>
+          <View style={styles(C, width).statsCard}>
+            <View style={styles(C, width).statCol}>
+              <View style={[styles(C, width).statIconBox, { backgroundColor: '#FFEDF1' }]}>
                  <Ionicons name="fitness" size={24} color={C.primary} />
               </View>
-              <Text style={styles.statNum}>{stats.workouts}</Text>
-              <Text style={styles.statLabel}>WORKOUTS</Text>
+              <Text style={styles(C, width).statNum}>{stats.workouts}</Text>
+              <Text style={styles(C, width).statLabel}>WORKOUTS</Text>
             </View>
-            <View style={styles.statCol}>
-              <View style={[styles.statIconBox, { backgroundColor: '#FFF4E5' }]}>
+            <View style={styles(C, width).statCol}>
+              <View style={[styles(C, width).statIconBox, { backgroundColor: '#FFF4E5' }]}>
                  <Ionicons name="flame" size={24} color="#F59E0B" />
               </View>
-              <Text style={styles.statNum}>{stats.kcal}</Text>
-              <Text style={styles.statLabel}>KCAL</Text>
+              <Text style={styles(C, width).statNum}>{stats.kcal}</Text>
+              <Text style={styles(C, width).statLabel}>KCAL</Text>
             </View>
-            <View style={styles.statCol}>
-              <View style={[styles.statIconBox, { backgroundColor: '#E0F2FE' }]}>
+            <View style={styles(C, width).statCol}>
+              <View style={[styles(C, width).statIconBox, { backgroundColor: '#E0F2FE' }]}>
                  <Ionicons name="time" size={24} color="#3B82F6" />
               </View>
-              <Text style={styles.statNum}>{stats.minutes}</Text>
-              <Text style={styles.statLabel}>MINUTES</Text>
+              <Text style={styles(C, width).statNum}>{stats.minutes}</Text>
+              <Text style={styles(C, width).statLabel}>MINUTES</Text>
             </View>
           </View>
 
           {/* Weight Card */}
-          <View style={styles.card}>
-            <View style={styles.rowBetween}>
-                <Text style={styles.cardTitle}>Weight <Text style={styles.cardUnit}>(kg)</Text></Text>
-                <Pressable style={styles.editPill} onPress={() => openEditModal("weight", weight)}>
+          <View style={styles(C, width).card}>
+            <View style={styles(C, width).rowBetween}>
+                <Text style={styles(C, width).cardTitle}>Weight <Text style={styles(C, width).cardUnit}>(kg)</Text></Text>
+                <Pressable style={styles(C, width).editPill} onPress={() => openEditModal("weight", weight)}>
                     <Ionicons name="pencil" size={14} color={C.primary} />
                 </Pressable>
             </View>
 
-            <View style={styles.weightSummary}>
-              <View style={styles.weightCol}>
-                <Text style={styles.weightLabel}>Current</Text>
-                <Text style={styles.weightNum}>{weight}</Text>
+            <View style={styles(C, width).weightSummary}>
+              <View style={styles(C, width).weightCol}>
+                <Text style={styles(C, width).weightLabel}>Current</Text>
+                <Text style={styles(C, width).weightNum}>{weight}</Text>
               </View>
-              <View style={styles.divider} />
-              <View style={styles.weightCol}>
-                <Text style={styles.weightLabel}>Goal</Text>
-                <Text style={styles.weightNum}>{goal}</Text>
+              <View style={styles(C, width).divider} />
+              <View style={styles(C, width).weightCol}>
+                <Text style={styles(C, width).weightLabel}>Goal</Text>
+                <Text style={styles(C, width).weightNum}>{goal}</Text>
               </View>
             </View>
 
@@ -203,23 +203,23 @@ export default function ProgressScreen({ navigation }) {
           </View>
 
           {/* BMI Card */}
-          <View style={styles.card}>
-            <View style={styles.rowBetween}>
-              <Text style={styles.cardTitle}>BMI <Text style={styles.cardUnit}>(kg/m²)</Text></Text>
-              <Pressable style={styles.editPill} onPress={() => openEditModal("height", height)}>
+          <View style={styles(C, width).card}>
+            <View style={styles(C, width).rowBetween}>
+              <Text style={styles(C, width).cardTitle}>BMI <Text style={styles(C, width).cardUnit}>(kg/m²)</Text></Text>
+              <Pressable style={styles(C, width).editPill} onPress={() => openEditModal("height", height)}>
                 <Ionicons name="resize" size={14} color={C.primary} />
               </Pressable>
             </View>
 
-            <View style={styles.bmiRow}>
-              <Text style={styles.bmiNum}>{calculatedBmi}</Text>
-              <View style={[styles.statusTag, { backgroundColor: bmiColor + '15' }]}>
-                <Text style={[styles.bmiStatus, { color: bmiColor }]}>{bmiStatusText}</Text>
+            <View style={styles(C, width).bmiRow}>
+              <Text style={styles(C, width).bmiNum}>{calculatedBmi}</Text>
+              <View style={[styles(C, width).statusTag, { backgroundColor: bmiColor + '15' }]}>
+                <Text style={[styles(C, width).bmiStatus, { color: bmiColor }]}>{bmiStatusText}</Text>
               </View>
             </View>
 
-            <View style={styles.bmiBarContainer}>
-              <View style={styles.bmiBar}>
+            <View style={styles(C, width).bmiBarContainer}>
+              <View style={styles(C, width).bmiBar}>
                 <Svg height="12" width="100%">
                   <Defs>
                     <SvgLinearGradient id="grad" x1="0" y1="0" x2="1" y2="0">
@@ -233,10 +233,10 @@ export default function ProgressScreen({ navigation }) {
                   <Rect x="0" y="0" width="100%" height="12" rx="6" fill="url(#grad)" />
                 </Svg>
               </View>
-              <View style={[styles.bmiThumb, { left: `${bmiPercent}%`, backgroundColor: bmiColor }]} />
-              <View style={styles.bmiLabels}>
+              <View style={[styles(C, width).bmiThumb, { left: `${bmiPercent}%`, backgroundColor: bmiColor }]} />
+              <View style={styles(C, width).bmiLabels}>
                 {["15", "18.5", "25", "30", "35", "40"].map((l, i) => (
-                    <Text key={i} style={styles.bmiLabelTxt}>{l}</Text>
+                    <Text key={i} style={styles(C, width).bmiLabelTxt}>{l}</Text>
                 ))}
               </View>
             </View>
@@ -248,19 +248,19 @@ export default function ProgressScreen({ navigation }) {
 
       {/* Edit Modal */}
       <Modal visible={editModalVisible} transparent animationType="fade">
-        <KeyboardAvoidingView style={styles.modalBackdrop} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-          <View style={styles.modalBox}>
-            <Text style={styles.modalTitle}>Update {editType === "weight" ? "Weight" : editType === "height" ? "Height" : "Goal"}</Text>
+        <KeyboardAvoidingView style={styles(C, width).modalBackdrop} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+          <View style={styles(C, width).modalBox}>
+            <Text style={styles(C, width).modalTitle}>Update {editType === "weight" ? "Weight" : editType === "height" ? "Height" : "Goal"}</Text>
             <TextInput
-              style={styles.modalInput} keyboardType="numeric"
+              style={styles(C, width).modalInput} keyboardType="numeric"
               value={editValue} onChangeText={setEditValue} autoFocus
             />
-            <View style={styles.modalBtns}>
-              <Pressable style={styles.modalBtnCancel} onPress={() => setEditModalVisible(false)}>
-                <Text style={styles.modalBtnCancelTxt}>Cancel</Text>
+            <View style={styles(C, width).modalBtns}>
+              <Pressable style={styles(C, width).modalBtnCancel} onPress={() => setEditModalVisible(false)}>
+                <Text style={styles(C, width).modalBtnCancelTxt}>Cancel</Text>
               </Pressable>
-              <Pressable style={styles.modalBtnSave} onPress={saveEdit}>
-                <Text style={styles.modalBtnSaveTxt}>Save</Text>
+              <Pressable style={styles(C, width).modalBtnSave} onPress={saveEdit}>
+                <Text style={styles(C, width).modalBtnSaveTxt}>Save</Text>
               </Pressable>
             </View>
           </View>
@@ -270,7 +270,7 @@ export default function ProgressScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = (C, width) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#FAF9FA" },
   scroll: { paddingVertical: 10 },
   responsiveContainer: { width: '100%', maxWidth: 650, alignSelf: 'center', paddingHorizontal: 16 },

@@ -7,7 +7,7 @@ import {
 import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { C } from "../theme/colors";
+import { useTheme } from "../context/ThemeContext";
 import { getSettings, saveSettings, getProfile, saveProfile, resetAllData } from "../storage/fitnessStorage";
 
 const ITEM_H = 44;
@@ -142,17 +142,18 @@ const sh = StyleSheet.create({
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 const THEMES = [
-  { name: "Rose Pink",    primary: "#E8607A" },
-  { name: "Ocean Blue",   primary: "#4A90E2" },
-  { name: "Forest Green", primary: "#3BBFA0" },
-  { name: "Sunshine",     primary: "#F4A261" },
-  { name: "Purple Night", primary: "#9B72CF" },
-  { name: "Coral",        primary: "#FF6B6B" },
+  { key: "rose",     name: "Rose",     primary: "#E8607A" },
+  { key: "ocean",    name: "Ocean",    primary: "#2196F3" },
+  { key: "forest",   name: "Forest",   primary: "#2E7D5B" },
+  { key: "sunset",   name: "Sunset",   primary: "#FF6D3A" },
+  { key: "lavender", name: "Lavender", primary: "#9B72CF" },
+  { key: "midnight", name: "Midnight", primary: "#E8607A" },
 ];
 const LANGUAGES = ["English", "Spanish", "French", "German", "Urdu", "Arabic"];
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function SettingsScreen({ navigation }) {
+  const { colors: C, setTheme, themeKey } = useTheme();
   const [settings, setSettings] = useState({
     reminderTime: "20:00", restTime: "30", countdownTime: "10",
     soundEnabled: true, language: "English", units: "Metric (kg, m)",
@@ -251,6 +252,8 @@ export default function SettingsScreen({ navigation }) {
     </View>
   );
 
+  const s = makeStyles(C);
+
   return (
     <SafeAreaView style={s.safe}>
       {/* Header */}
@@ -330,12 +333,12 @@ export default function SettingsScreen({ navigation }) {
         onConfirm={() => setShowTheme(false)} confirmLabel="Done">
         <View style={s.themeGrid}>
           {THEMES.map(t => (
-            <Pressable key={t.name}
-              style={[s.themeCell, { borderColor: settings.theme === t.name ? t.primary : "#EDE6E9" }]}
-              onPress={async () => await persist("theme", t.name)}>
+            <Pressable key={t.key}
+              style={[s.themeCell, { borderColor: themeKey === t.key ? t.primary : "#EDE6E9" }]}
+              onPress={() => setTheme(t.key)}>
               <View style={[s.themeDot, { backgroundColor: t.primary }]} />
-              <Text style={[s.themeName, settings.theme === t.name && { color: t.primary, fontWeight: "700" }]}>{t.name}</Text>
-              {settings.theme === t.name && (
+              <Text style={[s.themeName, themeKey === t.key && { color: t.primary, fontWeight: "700" }]}>{t.name}</Text>
+              {themeKey === t.key && (
                 <View style={[s.themeCheck, { backgroundColor: t.primary }]}>
                   <Ionicons name="checkmark" size={10} color="#fff" />
                 </View>
@@ -388,7 +391,7 @@ export default function SettingsScreen({ navigation }) {
         </SectionCard>
 
         <SectionCard title="Appearance">
-          <SettingRow label="Theme"    icon="color-palette-outline"    iconBg="#F3E8FF" value={settings.theme || "Rose Pink"}  onPress={() => setShowTheme(true)} />
+          <SettingRow label="Theme"    icon="color-palette-outline"    iconBg="#F3E8FF" value={THEMES.find(t => t.key === themeKey)?.name || "Rose"}  onPress={() => setShowTheme(true)} />
           <SettingRow label="Language" icon="language-outline"         iconBg="#E0F2FE" value={settings.language || "English"} onPress={() => setShowLanguage(true)} />
           <SettingRow label="Units"    icon="swap-horizontal-outline"  iconBg="#DCFCE7" value={settings.units?.includes("Imperial") ? "Imperial" : "Metric"} isLast onPress={() => setShowUnits(true)} />
         </SectionCard>
@@ -427,7 +430,7 @@ export default function SettingsScreen({ navigation }) {
   );
 }
 
-const s = StyleSheet.create({
+const makeStyles = (C) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#FAF9FA" },
   gradHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingTop: 14, paddingBottom: 20, borderBottomLeftRadius: 24, borderBottomRightRadius: 24 },
   backBtn: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },

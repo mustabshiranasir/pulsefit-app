@@ -1,13 +1,13 @@
 import React, { useState, useCallback, useRef } from "react";
 import {
   SafeAreaView, ScrollView, View, Text, StyleSheet,
-  Pressable, Image, Dimensions, Alert, Modal,
+  Pressable, Image, Alert, Modal,
   KeyboardAvoidingView, Platform, Switch, TextInput,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { C } from "../theme/colors";
+import { useTheme } from "../context/ThemeContext";
 import DrawerMenu from "../components/DrawerMenu";
 import StickyNavbar from "../components/StickyNavbar";
 import {
@@ -17,7 +17,6 @@ import {
 import { useAuth } from "../context/AuthContext";
 import * as ImagePicker from "expo-image-picker";
 
-const { width } = Dimensions.get("window");
 const ITEM_H = 44;
 
 // ─── Drum column ──────────────────────────────────────────────────────────────
@@ -171,12 +170,12 @@ const sh = StyleSheet.create({
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 const THEMES = [
-  { name: "Rose Pink",    primary: "#E8607A" },
-  { name: "Ocean Blue",   primary: "#4A90E2" },
-  { name: "Forest Green", primary: "#3BBFA0" },
-  { name: "Sunshine",     primary: "#F4A261" },
-  { name: "Purple Night", primary: "#9B72CF" },
-  { name: "Coral",        primary: "#FF6B6B" },
+  { key: "rose",     name: "Rose",     primary: "#E8607A" },
+  { key: "ocean",    name: "Ocean",    primary: "#2196F3" },
+  { key: "forest",   name: "Forest",   primary: "#2E7D5B" },
+  { key: "sunset",   name: "Sunset",   primary: "#FF6D3A" },
+  { key: "lavender", name: "Lavender", primary: "#9B72CF" },
+  { key: "midnight", name: "Midnight", primary: "#E8607A" },
 ];
 const GENDERS   = ["Female", "Male", "Non-binary", "Prefer not to say"];
 const LANGUAGES = ["English", "Spanish", "French", "German", "Urdu", "Arabic"];
@@ -184,6 +183,7 @@ const UNITS_OPT = ["Metric (kg, m)", "Imperial (lb, ft)"];
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function ProfileScreen({ navigation }) {
+  const { colors: C, setTheme, themeKey } = useTheme();
   const { user, signOut, updateUser } = useAuth();
   const [drawerOpen, setDrawerOpen]   = useState(false);
   const [activeDrawerTab, setActiveDrawerTab] = useState("Profile");
@@ -332,6 +332,8 @@ export default function ProfileScreen({ navigation }) {
     </Pressable>
   );
 
+  const s = makeStyles(C);
+
   return (
     <SafeAreaView style={s.safe}>
       <StickyNavbar navScrolled={navScrolled} onMenuPress={() => setDrawerOpen(true)} title="PROFILE" subtitle=" " />
@@ -432,14 +434,14 @@ export default function ProfileScreen({ navigation }) {
         onConfirm={() => setShowTheme(false)} confirmLabel="Done">
         <View style={s.themeGrid}>
           {THEMES.map(t => (
-            <Pressable key={t.name}
-              style={[s.themeCell, { borderColor: settings.theme === t.name ? t.primary : "#EDE6E9" }]}
-              onPress={() => saveS("theme", t.name)}>
+            <Pressable key={t.key}
+              style={[s.themeCell, { borderColor: themeKey === t.key ? t.primary : "#EDE6E9" }]}
+              onPress={() => setTheme(t.key)}>
               <View style={[s.themeDot, { backgroundColor: t.primary }]} />
-              <Text style={[s.themeName, settings.theme === t.name && { color: t.primary, fontWeight: "700" }]}>
+              <Text style={[s.themeName, themeKey === t.key && { color: t.primary, fontWeight: "700" }]}>
                 {t.name}
               </Text>
-              {settings.theme === t.name && (
+              {themeKey === t.key && (
                 <View style={[s.themeCheck, { backgroundColor: t.primary }]}>
                   <Ionicons name="checkmark" size={10} color="#fff" />
                 </View>
@@ -586,7 +588,7 @@ export default function ProfileScreen({ navigation }) {
               onPress={() => setShowLanguage(true)} />
             <Row icon="swap-horizontal-outline" label="Units"    value={settings.units?.includes("Imperial") ? "Imperial" : "Metric"}
               onPress={() => setShowUnits(true)} />
-            <Row icon="color-palette-outline"  label="Theme"     value={settings.theme || "Rose Pink"}
+            <Row icon="color-palette-outline"  label="Theme"     value={THEMES.find(t => t.key === themeKey)?.name || "Rose"}
               onPress={() => setShowTheme(true)} isLast />
           </View>
 
@@ -614,7 +616,7 @@ export default function ProfileScreen({ navigation }) {
   );
 }
 
-const s = StyleSheet.create({
+const makeStyles = (C) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#FAF9FA" },
   scroll: { paddingVertical: 20 },
   container: { width: "100%", maxWidth: 650, alignSelf: "center", paddingHorizontal: 20 },

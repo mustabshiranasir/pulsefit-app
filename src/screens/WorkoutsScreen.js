@@ -18,7 +18,6 @@ import DrawerMenu from "../components/DrawerMenu";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Animated,
-  Dimensions,
   FlatList,
   Image,
   Modal,
@@ -31,32 +30,12 @@ import {
   TouchableWithoutFeedback,
   View,
   Alert,
+  useWindowDimensions,
 } from "react-native";
 import { ImageBackground } from "react-native";
 import StickyNavbar from "../components/StickyNavbar";
 import { addWorkoutStat } from "../storage/fitnessStorage";
-
-const { width } = Dimensions.get("window");
-
-// ─── Theme tokens — identical to HomeScreen ───────────────────────────────────
-const C = {
-  bg: "#FBF7F4",
-  card: "#FFFFFF",
-  primary: "#E8607A",
-  accent: "#F4A261",
-  purple: "#9B72CF",
-  teal: "#3BBFA0",
-  soft: "#FFF0F3",
-  text: "#1C1C2E",
-  muted: "#9499A8",
-  border: "#F0EAE4",
-};
-
-// ─── Layout constants ─────────────────────────────────────────────────────────
-const DRAWER_W = width >= 768 ? 320 : width * 0.8;
-// Challenge-card dimensions — same ratios as HomeScreen
-const CHALLENGE_W = Math.min(width * 0.62, 260);
-const CHALLENGE_H = Math.min(width * 0.68, 280);
+import { useTheme } from "../context/ThemeContext";
 
 // ─── Drawer nav items (same as HomeScreen) ────────────────────────────────────
 const DRAWER_TABS = [
@@ -221,28 +200,31 @@ const SUMMER_LIST = [
 // ─── ChallengeCard — exact copy from HomeScreen ───────────────────────────────
 // Used for BOTH New Update banners AND Trending Choices so layout is 100% identical
 function ChallengeCard({ item, navigation }) {
+  const { colors: C } = useTheme();
+  const { width } = useWindowDimensions();
+  const sheet = styles(C, width);
   return (
-    <Pressable style={[styles.challengeCard, { backgroundColor: item.bg }]} onPress={() => navigation.navigate("WorkoutDetail", { workout: item })}>
+    <Pressable style={[sheet.challengeCard, { backgroundColor: item.bg }]} onPress={() => navigation.navigate("WorkoutDetail", { workout: item })}>
       {/* Coloured tag pill — top-left */}
-      <View style={[styles.challengeTagPill, { backgroundColor: item.accent + "22" }]}>
-        <Text style={[styles.challengeTagTxt, { color: item.accent }]}>{item.tag}</Text>
+      <View style={[sheet.challengeTagPill, { backgroundColor: item.accent + "22" }]}>
+        <Text style={[sheet.challengeTagTxt, { color: item.accent }]}>{item.tag}</Text>
       </View>
       {/* Image fills top 62% of card */}
-      <Image source={{ uri: item.image }} style={styles.challengeImg} resizeMode="cover" />
+      <Image source={{ uri: item.image }} style={sheet.challengeImg} resizeMode="cover" />
       {/* Bottom Content */}
-      <View style={styles.challengeContent}>
-        <Text style={styles.challengeTitle} numberOfLines={2}>
+      <View style={sheet.challengeContent}>
+        <Text style={sheet.challengeTitle} numberOfLines={2}>
           {item.title}
         </Text>
 
         <Pressable
           style={[
-            styles.startBtn,
+            sheet.startBtn,
             { backgroundColor: item.accent },
           ]}
           onPress={() => navigation.navigate("WorkoutDetail", { workout: item })}
         >
-          <Text style={styles.startBtnTxt}>Start</Text>
+          <Text style={sheet.startBtnTxt}>Start</Text>
         </Pressable>
       </View>
     </Pressable>
@@ -251,25 +233,31 @@ function ChallengeCard({ item, navigation }) {
 
 // ─── Body-focus circle ────────────────────────────────────────────────────────
 function BodyFocusCircle({ item, onPress }) {
+  const { colors: C } = useTheme();
+  const { width } = useWindowDimensions();
+  const sheet = styles(C, width);
   return (
-    <Pressable style={styles.bodyFocusItem} onPress={onPress}>
-      <View style={styles.bodyFocusCircle}>
-        <Image source={{ uri: item.image }} style={styles.bodyFocusImg} />
+    <Pressable style={sheet.bodyFocusItem} onPress={onPress}>
+      <View style={sheet.bodyFocusCircle}>
+        <Image source={{ uri: item.image }} style={sheet.bodyFocusImg} />
       </View>
-      <Text style={styles.bodyFocusLabel}>{item.label}</Text>
-      <Text style={styles.bodyFocusCount}>{item.count} Workouts</Text>
+      <Text style={sheet.bodyFocusLabel}>{item.label}</Text>
+      <Text style={sheet.bodyFocusCount}>{item.count} Workouts</Text>
     </Pressable>
   );
 }
 
 // ─── List row — image left, title + duration right ────────────────────────────
 function WorkoutListRow({ item, navigation }) {
+  const { colors: C } = useTheme();
+  const { width } = useWindowDimensions();
+  const sheet = styles(C, width);
   return (
-    <Pressable style={styles.listRow} onPress={() => navigation.navigate("WorkoutDetail", { workout: item })}>
-      <Image source={{ uri: item.image }} style={styles.listRowImg} />
-      <View style={styles.listRowInfo}>
-        <Text style={styles.listRowTitle}>{item.title}</Text>
-        <Text style={styles.listRowMins}>{item.mins}</Text>
+    <Pressable style={sheet.listRow} onPress={() => navigation.navigate("WorkoutDetail", { workout: item })}>
+      <Image source={{ uri: item.image }} style={sheet.listRowImg} />
+      <View style={sheet.listRowInfo}>
+        <Text style={sheet.listRowTitle}>{item.title}</Text>
+        <Text style={sheet.listRowMins}>{item.mins}</Text>
       </View>
       <Ionicons name="chevron-forward" size={16} color={C.muted} />
     </Pressable>
@@ -278,13 +266,16 @@ function WorkoutListRow({ item, navigation }) {
 
 // ─── Full-image 2-col card (yoga, fast random) ────────────────────────────────
 function TwoColCard({ item, navigation }) {
+  const { colors: C } = useTheme();
+  const { width } = useWindowDimensions();
+  const sheet = styles(C, width);
   return (
-    <Pressable style={styles.twoColCard} onPress={() => navigation.navigate("WorkoutDetail", { workout: item })}>
-      <Image source={{ uri: item.image }} style={styles.twoColImg} />
-      <View style={styles.twoColOverlay} />
-      <View style={styles.twoColInfo}>
-        <Text style={styles.twoColTitle}>{item.title}</Text>
-        {item.mins ? <Text style={styles.twoColMins}>{item.mins}</Text> : null}
+    <Pressable style={sheet.twoColCard} onPress={() => navigation.navigate("WorkoutDetail", { workout: item })}>
+      <Image source={{ uri: item.image }} style={sheet.twoColImg} />
+      <View style={sheet.twoColOverlay} />
+      <View style={sheet.twoColInfo}>
+        <Text style={sheet.twoColTitle}>{item.title}</Text>
+        {item.mins ? <Text style={sheet.twoColMins}>{item.mins}</Text> : null}
       </View>
     </Pressable>
   );
@@ -292,34 +283,43 @@ function TwoColCard({ item, navigation }) {
 
 // ─── Coloured stretch routine card ────────────────────────────────────────────
 function StretchCard({ item, navigation }) {
+  const { colors: C } = useTheme();
+  const { width } = useWindowDimensions();
+  const sheet = styles(C, width);
   return (
-    <Pressable style={[styles.stretchCard, { backgroundColor: item.bg }]} onPress={() => navigation.navigate("WorkoutDetail", { workout: item })}>
-      <Text style={styles.stretchCardTitle}>{item.title}</Text>
-      <Text style={styles.stretchCardMins}>{item.mins}</Text>
-      <Image source={{ uri: item.image }} style={styles.stretchCardImg} />
+    <Pressable style={[sheet.stretchCard, { backgroundColor: item.bg }]} onPress={() => navigation.navigate("WorkoutDetail", { workout: item })}>
+      <Text style={sheet.stretchCardTitle}>{item.title}</Text>
+      <Text style={sheet.stretchCardMins}>{item.mins}</Text>
+      <Image source={{ uri: item.image }} style={sheet.stretchCardImg} />
     </Pressable>
   );
 }
 
 // ─── Labelled divider between sections in the "New" all-in-one view ──────────
 function SectionDivider({ label }) {
+  const { colors: C } = useTheme();
+  const { width } = useWindowDimensions();
+  const sheet = styles(C, width);
   return (
-    <View style={styles.sectionDividerWrap}>
-      <View style={styles.sectionDividerLine} />
-      <Text style={styles.sectionDividerTxt}>{label}</Text>
-      <View style={styles.sectionDividerLine} />
+    <View style={sheet.sectionDividerWrap}>
+      <View style={sheet.sectionDividerLine} />
+      <Text style={sheet.sectionDividerTxt}>{label}</Text>
+      <View style={sheet.sectionDividerLine} />
     </View>
   );
 }
 
 // ─── Shared section header ────────────────────────────────────────────────────
 function SectionHeader({ title, onViewAll }) {
+  const { colors: C } = useTheme();
+  const { width } = useWindowDimensions();
+  const sheet = styles(C, width);
   return (
-    <View style={styles.sectionRow}>
-      <Text style={styles.sectionTitle}>{title}</Text>
+    <View style={sheet.sectionRow}>
+      <Text style={sheet.sectionTitle}>{title}</Text>
       {onViewAll && (
         <Pressable onPress={onViewAll}>
-          <Text style={styles.viewAll}>View all</Text>
+          <Text style={sheet.viewAll}>View all</Text>
         </Pressable>
       )}
     </View>
@@ -373,25 +373,28 @@ function NewSection({ navigation }) {
 }
 
 function FastSection({ navigation }) {
+  const { colors: C } = useTheme();
+  const { width } = useWindowDimensions();
+  const sheet = styles(C, width);
   return (
     <>
-      <Text style={styles.tabSubtitle}>Not enough time?</Text>
-      <Text style={[styles.tabSubSubtitle, { marginBottom: 18 }]}>
+      <Text style={sheet.tabSubtitle}>Not enough time?</Text>
+      <Text style={[sheet.tabSubSubtitle, { marginBottom: 18 }]}>
         2–7 min workout. Do it anytime, anywhere.
       </Text>
 
       {/* HERO - FAT BURNING HIIT (matches screenshot) */}
       <Pressable 
-        style={[styles.fastHeroNew, { backgroundColor: FAST_HERO.bg }]}
+        style={[sheet.fastHeroNew, { backgroundColor: FAST_HERO.bg }]}
         onPress={() => navigation.navigate("WorkoutDetail", { workout: FAST_HERO })}
       >
-        <View style={styles.fastHeroTextWrapNew}>
-          <Text style={styles.fastHeroTitleNew}>{FAST_HERO.title}</Text>
-          <Text style={styles.fastHeroMinsNew}>{FAST_HERO.mins}</Text>
+        <View style={sheet.fastHeroTextWrapNew}>
+          <Text style={sheet.fastHeroTitleNew}>{FAST_HERO.title}</Text>
+          <Text style={sheet.fastHeroMinsNew}>{FAST_HERO.mins}</Text>
         </View>
         <Image
           source={{ uri: FAST_HERO.image }}
-          style={styles.fastHeroImgNew}
+          style={sheet.fastHeroImgNew}
           resizeMode="cover"
         />
       </Pressable>
@@ -399,21 +402,21 @@ function FastSection({ navigation }) {
       {/* RANDOM WORKOUT */}
       <SectionHeader title="RANDOM WORKOUT" />
 
-      <View style={styles.twoColRow}>
+      <View style={sheet.twoColRow}>
         {FAST_RANDOM.map((item) => (
           <Pressable
             key={item.id}
-            style={[styles.fastRandomCardNew, { backgroundColor: item.bg }]}
+            style={[sheet.fastRandomCardNew, { backgroundColor: item.bg }]}
             onPress={() => navigation.navigate("WorkoutDetail", { workout: item })}
           >
             <Image
               source={{ uri: item.image }}
-              style={styles.fastRandomImgNew}
+              style={sheet.fastRandomImgNew}
               resizeMode="cover"
             />
-            <View style={styles.fastRandomTextWrapNew}>
-              <Text style={styles.fastRandomTitleNew}>{item.title}</Text>
-              <Text style={styles.fastRandomMinsNew}>{item.mins}</Text>
+            <View style={sheet.fastRandomTextWrapNew}>
+              <Text style={sheet.fastRandomTitleNew}>{item.title}</Text>
+              <Text style={sheet.fastRandomMinsNew}>{item.mins}</Text>
             </View>
           </Pressable>
         ))}
@@ -430,12 +433,12 @@ function FastSection({ navigation }) {
         contentContainerStyle={{ gap: 15, }}
         renderItem={({ item }) => (
           <Pressable 
-            style={styles.fastGoalCard}
+            style={sheet.fastGoalCard}
             onPress={() => navigation.navigate("WorkoutDetail", { workout: item })}
           >
-            <Image source={{ uri: item.image }} style={styles.fastGoalImg} />
-            <View style={styles.fastGoalOverlay} />
-            <Text style={styles.fastGoalTitle}>{item.title}</Text>
+            <Image source={{ uri: item.image }} style={sheet.fastGoalImg} />
+            <View style={sheet.fastGoalOverlay} />
+            <Text style={sheet.fastGoalTitle}>{item.title}</Text>
           </Pressable>
         )}
       />
@@ -444,20 +447,23 @@ function FastSection({ navigation }) {
 }
 
 function YogaSection({ navigation }) {
+  const { colors: C } = useTheme();
+  const { width } = useWindowDimensions();
+  const sheet = styles(C, width);
   return (
     <>
-      <View style={styles.accentBar} />
-      <Text style={[styles.tabSubtitle, { marginBottom: 22 }]}>
+      <View style={sheet.accentBar} />
+      <Text style={[sheet.tabSubtitle, { marginBottom: 22 }]}>
         Activate your body with basic yoga asanas. Improve your flexibility and reduce chronic pain and stress.
       </Text>
 
       <SectionHeader title="GETTING STARTED" />
-      <View style={[styles.twoColRow, { marginBottom: 20 }]}>
+      <View style={[sheet.twoColRow, { marginBottom: 20 }]}>
         {YOGA_GETTING_STARTED.map((item) => <TwoColCard key={item.id} item={item} navigation={navigation} />)}
       </View>
 
       <SectionHeader title="STRESS RELIEF AND RELAX" />
-      <View style={[styles.twoColRow, { marginBottom: 10 }]}>
+      <View style={[sheet.twoColRow, { marginBottom: 10 }]}>
         {YOGA_STRESS.map((item) => <TwoColCard key={item.id} item={item} navigation={navigation} />)}
       </View>
     </>
@@ -465,10 +471,13 @@ function YogaSection({ navigation }) {
 }
 
 function SevenMinSection({ navigation }) {
+  const { colors: C } = useTheme();
+  const { width } = useWindowDimensions();
+  const sheet = styles(C, width);
   return (
     <>
-      <View style={styles.accentBar} />
-      <Text style={[styles.tabSubtitle, { marginBottom: 22 }]}>
+      <View style={sheet.accentBar} />
+      <Text style={[sheet.tabSubtitle, { marginBottom: 22 }]}>
         In just 7 min a day, simple, fast, and efficient workouts help improve your fitness and health.
       </Text>
       {SEVEN_MIN.map((item) => <WorkoutListRow key={item.id} item={item} navigation={navigation} />)}
@@ -478,10 +487,13 @@ function SevenMinSection({ navigation }) {
 }
 
 function StretchSection({ navigation }) {
+  const { colors: C } = useTheme();
+  const { width } = useWindowDimensions();
+  const sheet = styles(C, width);
   return (
     <>
-      <View style={styles.accentBar} />
-      <Text style={[styles.tabSubtitle, { marginBottom: 22 }]}>
+      <View style={sheet.accentBar} />
+      <Text style={[sheet.tabSubtitle, { marginBottom: 22 }]}>
         Stretch your arm, shoulder, chest and back. Loosen muscles and improve flexibility.
       </Text>
 
@@ -501,32 +513,38 @@ function StretchSection({ navigation }) {
 }
 // ─── New Stretch Card: Full Width Image at Top + Text at Bottom ─────────────
 function StretchCardNew({ item, navigation }) {
+  const { colors: C } = useTheme();
+  const { width } = useWindowDimensions();
+  const sheet = styles(C, width);
   return (
     <Pressable 
-      style={[styles.stretchCardNew, { backgroundColor: item.bg }]}
+      style={[sheet.stretchCardNew, { backgroundColor: item.bg }]}
       onPress={() => navigation.navigate("WorkoutDetail", { workout: item })}
     >
       {/* Full width image at top */}
       <Image
         source={{ uri: item.image }}
-        style={styles.stretchCardNewImg}
+        style={sheet.stretchCardNewImg}
         resizeMode="cover"
       />
 
       {/* Bottom content area */}
-      <View style={styles.stretchCardNewBottom}>
-        <Text style={styles.stretchCardNewTitle}>{item.title}</Text>
-        <Text style={styles.stretchCardNewMins}>{item.mins}</Text>
+      <View style={sheet.stretchCardNewBottom}>
+        <Text style={sheet.stretchCardNewTitle}>{item.title}</Text>
+        <Text style={sheet.stretchCardNewMins}>{item.mins}</Text>
       </View>
     </Pressable>
   );
 }
 
 function SummerSection({ navigation }) {
+  const { colors: C } = useTheme();
+  const { width } = useWindowDimensions();
+  const sheet = styles(C, width);
   return (
     <>
-      <View style={styles.accentBar} />
-      <Text style={[styles.tabSubtitle, { marginBottom: 22 }]}>
+      <View style={sheet.accentBar} />
+      <Text style={[sheet.tabSubtitle, { marginBottom: 22 }]}>
         Flatten your belly, lift your booty, slim your legs, get you bikini ready before summer starts!
       </Text>
       {SUMMER_LIST.map((item) => <WorkoutListRow key={item.id} item={item} navigation={navigation} />)}
@@ -568,6 +586,10 @@ function TabContent({ tabId, navigation }) {
 
 // ─── Main screen ──────────────────────────────────────────────────────────────
 export default function WorkoutsScreen({ navigation }) {
+  const { colors: C } = useTheme();
+  const { width } = useWindowDimensions();
+  const sheet = styles(C, width);
+
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeDrawerTab, setActiveDrawerTab] = useState("workouts");
   const [activeWorkoutTab, setActiveWorkoutTab] = useState("new");
@@ -586,7 +608,7 @@ export default function WorkoutsScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={sheet.safe}>
 
       {/* ── Navbar ── */}
       <StickyNavbar
@@ -606,26 +628,26 @@ export default function WorkoutsScreen({ navigation }) {
       {/* ── Main scroll ── */}
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={sheet.scroll}
         nestedScrollEnabled
         onScroll={handleScroll}
         scrollEventThrottle={16}
       >
-        <View style={styles.responsiveContainer}>
+        <View style={sheet.responsiveContainer}>
           {/* Search bar */}
-          <View style={[styles.searchWrap, searchFocused && styles.searchWrapFocused]}>
+          <View style={[sheet.searchWrap, searchFocused && sheet.searchWrapFocused]}>
             <Ionicons name="search-outline" size={16} color={C.muted} style={{ marginRight: 8 }} />
             <TextInput
               value={searchText}
               onChangeText={setSearchText}
               placeholder="SEARCH WORKOUTS"
               placeholderTextColor={C.muted}
-              style={styles.searchInput}
+              style={sheet.searchInput}
               onFocus={() => setSearchFocused(true)}
               onBlur={() => setSearchFocused(false)}
               underlineColorAndroid="transparent"
             />
-            <Pressable style={styles.searchIconBtn}>
+            <Pressable style={sheet.searchIconBtn}>
               <Ionicons name="options-outline" size={18} color={C.primary} />
             </Pressable>
           </View>
@@ -634,7 +656,7 @@ export default function WorkoutsScreen({ navigation }) {
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.catTabStrip}
+            contentContainerStyle={sheet.catTabStrip}
             style={{ marginBottom: 20 }}
           >
             {WORKOUT_TABS.map((tab) => {
@@ -643,12 +665,12 @@ export default function WorkoutsScreen({ navigation }) {
                 <Pressable
                   key={tab.id}
                   onPress={() => setActiveWorkoutTab(tab.id)}
-                  style={styles.catTabItem}
+                  style={sheet.catTabItem}
                 >
-                  <Text style={[styles.catTabTxt, isActive && styles.catTabTxtActive]}>
+                  <Text style={[sheet.catTabTxt, isActive && sheet.catTabTxtActive]}>
                     {tab.emoji ? `${tab.emoji} ` : ""}{tab.label}
                   </Text>
-                  {isActive && <View style={styles.catTabUnderline} />}
+                  {isActive && <View style={sheet.catTabUnderline} />}
                 </Pressable>
               );
             })}
@@ -666,7 +688,12 @@ export default function WorkoutsScreen({ navigation }) {
 }
 
 // ─── StyleSheet ───────────────────────────────────────────────────────────────
-const styles = StyleSheet.create({
+const styles = (C, width) => {
+  const DRAWER_W = width >= 768 ? 320 : width * 0.8;
+  const CHALLENGE_W = Math.min(width * 0.62, 260);
+  const CHALLENGE_H = Math.min(width * 0.68, 280);
+
+  return StyleSheet.create({
 
   safe: { flex: 1, backgroundColor: C.bg },
   scroll: { paddingVertical: 10 },
@@ -1012,4 +1039,5 @@ const styles = StyleSheet.create({
     gap: 10, paddingVertical: 12, paddingHorizontal: 10,
   },
   drawerLogoutTxt: { fontSize: 14, fontWeight: "700", color: C.primary },
-});
+  });
+};
